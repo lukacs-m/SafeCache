@@ -10,16 +10,13 @@ import Foundation
 
 public actor SafeCache<Key: Hashable, Value> {
     private let cache = NSCache<WrappedKey<Key>, SafeCacheEntry<Key, Value>>()
-    private let dateProvider: () -> Date
     private let entryLifetime: TimeInterval
     private let keysTracker = InternalKeyTracker<Key, Value>()
     private var cancelBag = Set<AnyCancellable>()
     public nonisolated let valueEvicted: PassthroughSubject<Value?, Never> = .init()
     
-    public init(dateProvider: @escaping () -> Date = Date.init,
-                entryLifetime: TimeInterval =  24 * 60 * 60,
+    public init(entryLifetime: TimeInterval =  24 * 60 * 60,
                 maximumEntryCount: Int = 100) {
-        self.dateProvider = dateProvider
         self.entryLifetime = entryLifetime
         cache.countLimit = maximumEntryCount
         cache.delegate = keysTracker
@@ -35,7 +32,7 @@ extension SafeCache: SafeCacheServicing {
     ///   - value: The value to add to the cache
     ///   - key: The key linked to the value in cache
     public func insert(_ value: Value, forKey key: Key) {
-        let date = dateProvider().addingTimeInterval(entryLifetime)
+        let date = Date.now.addingTimeInterval(entryLifetime)
         let entry = SafeCacheEntry(key: key, value: value, expirationDate: date)
         cache.setObject(entry, forKey: WrappedKey(key))
         keysTracker.add(key)
@@ -49,7 +46,7 @@ extension SafeCache: SafeCacheServicing {
             return nil
         }
         
-        guard !entry.isStale(after: dateProvider()) else {
+        guard !entry.isStale(after: Date.now) else {
             removeValue(forKey: key)
             return nil
         }
@@ -131,7 +128,7 @@ private extension SafeCache {
             return nil
         }
         
-        guard !entry.isStale(after: dateProvider()) else {
+        guard !entry.isStale(after: Date.now) else {
             removeValue(forKey: key)
             return nil
         }
