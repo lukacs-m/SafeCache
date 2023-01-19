@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol SafePersistantCaching: Actor {
+public protocol SafePersistantCaching<Key, Value>: Actor where Self: SafeCacheServicing<Key, Value> {
     func saveToDisk(
         withName name: String,
         using fileManager: FileManager) throws
@@ -15,4 +15,19 @@ public protocol SafePersistantCaching: Actor {
     func loadFromDisk(
         withName name: String,
         using fileManager: FileManager) throws
+}
+
+
+public extension SafePersistantCaching {
+    func saveToDisk(
+        withName name: String,
+        using fileManager: FileManager = .default) throws {
+            try saveToDisk(withName: name, using: fileManager)
+        }
+    
+    func loadFromDisk(
+        withName name: String,
+        using fileManager: FileManager = .default) throws {
+            try loadFromDisk(withName: name, using: fileManager)
+        }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol SafeCacheServicing: Actor {
+public protocol SafeCacheServicing<Key, Value>: Actor {
     associatedtype Key: Hashable
     associatedtype Value
 
@@ -15,4 +15,10 @@ public protocol SafeCacheServicing: Actor {
     func value(forKey key: Key) -> Value?
     func removeValue(forKey key: Key)
     func removeAll()
+}
+
+public extension SafeCacheServicing {
+    subscript(key: Key) -> Value? {
+        get { value(forKey: key) }
+    }
 }

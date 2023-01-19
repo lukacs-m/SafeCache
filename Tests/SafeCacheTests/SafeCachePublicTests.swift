@@ -2,8 +2,8 @@ import XCTest
 import SafeCache
 
 final class SafeCachePublicTests: XCTestCase {
-    var sut = SafeCache<String, TestObject>()
-    
+    var sut: any SafePersistantCaching<String, TestObject> = SafeCache<String, TestObject>()
+
     override func setUp() {
         super.setUp()
     }
